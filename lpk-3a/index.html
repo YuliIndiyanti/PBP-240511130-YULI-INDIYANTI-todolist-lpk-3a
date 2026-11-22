@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LKP 3A To-Do List interaktif dengan Vanilla JavaScript, manipulasi DOM, dan localStorage — Yuli Indiyanti (UMC).">
+  <title>TodoList — LKP 3A JavaScript &amp; DOM · Yuli Indiyanti</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23100B08'/%3E%3Crect x='2' y='2' width='28' height='28' rx='6' fill='none' stroke='%23F3DC8D' stroke-width='2'/%3E%3Cpath d='M9.5 16.5l4.2 4.2L22.5 11.5' fill='none' stroke='%23F3DC8D' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#konten">Lewati ke konten utama</a>
+
+  <!-- Floating Pill Topbar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#konten">
+        <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+          <path d="M8.5 12.5l2.5 2.5 4.8-5.2"></path>
+        </svg>
+        <span class="brand-title">TodoList</span>
+        <span class="brand-tag">LKP 3A · Vanilla JS</span>
+      </a>
+
+      <nav class="nav-tabs" aria-label="Navigasi bagian">
+        <a class="nav-tab" href="#ringkasan">Ringkasan</a>
+        <a class="nav-tab" href="#ruang-kerja">Daftar Tugas</a>
+        <button type="button" class="nav-tab nav-tab-btn" id="btn-open-shortcuts">
+          <span>Pintasan</span>
+          <kbd>?</kbd>
+        </button>
+      </nav>
+
+      <div class="menu-wrap">
+        <button
+          type="button"
+          class="user-avatar-btn"
+          id="btn-user-menu"
+          aria-label="Menu profil Yuli Indiyanti"
+          aria-expanded="false"
+          aria-controls="user-popover"
+        >
+          Y
+        </button>
+
+        <div class="popover-menu" id="user-popover" hidden>
+          <div class="popover-head">
+            <span class="popover-avatar" aria-hidden="true">Y</span>
+            <div class="popover-meta">
+              <strong>Yuli Indiyanti</strong>
+              <span>240511130 · TI24D · UMC</span>
+            </div>
+          </div>
+          <div class="popover-row">
+            <span>Pertemuan 4</span>
+            <span>DOM &amp; localStorage</span>
+          </div>
+          <div class="popover-divider" role="separator"></div>
+          <button type="button" class="popover-action" id="btn-seed-menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            <span>Muat 3 Contoh Tugas</span>
+          </button>
+          <button type="button" class="popover-action" id="btn-export-json">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"></path>
+            </svg>
+            <span>Ekspor Tugas (.json)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="konten">
+    <!-- Split Editorial Hero + 2x2 Hairline Telemetry Grid -->
+    <section id="ringkasan" class="hero-band">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <h1>Kelola tugas harian<br>dalam ruang fokus.</h1>
+          <p class="hero-lede" id="hero-summary">
+            Semua tugas kuliah, proyek, dan agenda pribadi tersimpan otomatis di browser menggunakan manipulasi DOM murni dan localStorage.
+          </p>
+          <div class="hero-actions">
+            <button type="button" class="btn btn-primary" id="btn-focus-composer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"></path>
+              </svg>
+              <span>Tulis Tugas Baru</span>
+            </button>
+            <span class="shortcut-hint">
+              Tekan <kbd>N</kbd> tambah, <kbd>/</kbd> cari, <kbd>?</kbd> bantuan
+            </span>
+          </div>
+        </div>
+
+        <!-- 2x2 Telemetry Panel (PPL-MODUL3 style) -->
+        <div class="telemetry-panel" aria-label="Statistik tugas">
+          <div class="telemetry-cell">
+            <span class="cell-label">Status Saat Ini</span>
+            <div class="cell-value-group">
+              <strong class="cell-big" id="stat-pending-num">0</strong>
+              <p id="stats" class="cell-caption">0 tugas belum selesai</p>
+            </div>
+          </div>
+
+          <div class="telemetry-cell">
+            <span class="cell-label">Progres Penyelesaian</span>
+            <div class="cell-value-group">
+              <div class="cell-split">
+                <strong class="cell-med" id="stat-ratio">0 dari 0</strong>
+                <span class="cell-pct" id="stat-pct">0%</span>
+              </div>
+              <div class="progress-track" aria-hidden="true">
+                <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+              </div>
+              <span class="cell-caption" id="stat-done-note">Belum ada tugas tercatat</span>
+            </div>
+          </div>
+
+          <div class="telemetry-cell">
+            <span class="cell-label">Prioritas Tinggi</span>
+            <div class="cell-value-group">
+              <strong class="cell-med" id="stat-high-count">0 aktif</strong>
+              <span class="cell-caption" id="stat-high-note">Tidak ada tugas mendesak</span>
+            </div>
+          </div>
+
+          <div class="telemetry-cell">
+            <span class="cell-label">Sebaran Kategori</span>
+            <div class="cell-value-group">
+              <p class="cell-meta-line" id="stat-categories">Kuliah 0 · Proyek 0 · Pribadi 0</p>
+              <button type="button" class="btn btn-subtle btn-xs" id="btn-clear-completed" disabled>
+                Bersihkan Selesai
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Composer Band -->
+    <section id="ruang-kerja" class="composer-band" aria-label="Tambah tugas baru">
+      <div class="container">
+        <form id="form-todo" class="composer-form" novalidate>
+          <div class="composer-main-row">
+            <div class="input-field-wrap">
+              <label for="input-todo" class="sr-only">Tulis tugas baru</label>
+              <input
+                type="text"
+                id="input-todo"
+                class="composer-input"
+                placeholder="Tulis tugas baru, misalnya: Review materi DOM & localStorage..."
+                autocomplete="off"
+                maxlength="200"
+                required
+              >
+            </div>
+            <button type="submit" class="btn btn-primary btn-submit" id="btn-add-todo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"></path>
+              </svg>
+              <span>Tambah</span>
+            </button>
+          </div>
+
+          <div class="composer-options-row">
+            <div class="option-group" role="group" aria-label="Pilih prioritas tugas">
+              <span class="option-label">Prioritas</span>
+              <div class="pill-group" id="priority-picker">
+                <button type="button" class="option-pill" data-priority="tinggi">Tinggi</button>
+                <button type="button" class="option-pill is-active" data-priority="sedang">Sedang</button>
+                <button type="button" class="option-pill" data-priority="rendah">Rendah</button>
+              </div>
+            </div>
+
+            <div class="option-group" role="group" aria-label="Pilih kategori tugas">
+              <span class="option-label">Kategori</span>
+              <div class="pill-group" id="category-picker">
+                <button type="button" class="option-pill is-active" data-category="Kuliah">Kuliah</button>
+                <button type="button" class="option-pill" data-category="Proyek">Proyek</button>
+                <button type="button" class="option-pill" data-category="Pribadi">Pribadi</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="form-error" id="form-error" role="alert" hidden></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- Full-Bleed Filter & Search Toolbar -->
+    <section class="toolbar-band" aria-label="Filter dan pencarian tugas">
+      <div class="container toolbar-inner">
+        <div class="toolbar-filters">
+          <div class="segmented-tabs" role="tablist" aria-label="Filter status tugas" id="status-tabs">
+            <button type="button" role="tab" class="seg-tab is-active" data-status="semua" aria-selected="true">
+              Semua <span class="tab-count" id="count-tab-semua">0</span>
+            </button>
+            <button type="button" role="tab" class="seg-tab" data-status="aktif" aria-selected="false">
+              Aktif <span class="tab-count" id="count-tab-aktif">0</span>
+            </button>
+            <button type="button" role="tab" class="seg-tab" data-status="selesai" aria-selected="false">
+              Selesai <span class="tab-count" id="count-tab-selesai">0</span>
+            </button>
+          </div>
+
+          <div class="category-chips" role="group" aria-label="Filter kategori">
+            <button type="button" class="chip-btn is-active" data-cat-filter="Semua">Semua Kategori</button>
+            <button type="button" class="chip-btn" data-cat-filter="Kuliah">Kuliah</button>
+            <button type="button" class="chip-btn" data-cat-filter="Proyek">Proyek</button>
+            <button type="button" class="chip-btn" data-cat-filter="Pribadi">Pribadi</button>
+          </div>
+        </div>
+
+        <div class="toolbar-controls">
+          <div class="search-box">
+            <label for="search-input" class="sr-only">Cari tugas</label>
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.35-4.35"></path>
+            </svg>
+            <input
+              type="search"
+              id="search-input"
+              class="search-input"
+              placeholder="Cari tugas atau kategori..."
+              autocomplete="off"
+            >
+            <button type="button" class="search-clear" id="btn-clear-search" aria-label="Hapus pencarian" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="select-wrap">
+            <label for="priority-filter" class="sr-only">Filter prioritas</label>
+            <select id="priority-filter" class="control-select" aria-label="Filter prioritas">
+              <option value="semua">Prioritas: Semua</option>
+              <option value="tinggi">Prioritas: Tinggi</option>
+              <option value="sedang">Prioritas: Sedang</option>
+              <option value="rendah">Prioritas: Rendah</option>
+            </select>
+          </div>
+
+          <div class="select-wrap">
+            <label for="sort-select" class="sr-only">Urutkan tugas</label>
+            <select id="sort-select" class="control-select" aria-label="Urutkan tugas">
+              <option value="terbaru">Urut: Terbaru</option>
+              <option value="prioritas">Urut: Prioritas</option>
+              <option value="abjad">Urut: A – Z</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task List Workspace -->
+    <section class="workspace-band" aria-label="Daftar tugas">
+      <div class="container">
+        <div class="list-header">
+          <div>
+            <h2>Daftar Tugas</h2>
+            <p class="list-subtitle">Klik kotak centang untuk menandai selesai, klik dua kali teks tugas untuk mengedit langsung.</p>
+          </div>
+          <span class="visible-pill">
+            Menampilkan <strong id="visible-count">0</strong> dari <strong id="total-count">0</strong>
+          </span>
+        </div>
+
+        <div class="todo-surface">
+          <ul id="list-todo" class="todo-list" aria-live="polite"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Undo Toast Container -->
+  <div class="toast-region" aria-live="polite" aria-atomic="true">
+    <div class="toast" id="toast" data-open="false" hidden>
+      <div class="toast-content">
+        <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M9 12l2 2 4-4"></path>
+        </svg>
+        <span id="toast-message"></span>
+      </div>
+      <div class="toast-actions">
+        <button type="button" class="toast-undo" id="btn-toast-undo" hidden>Urungkan</button>
+        <button type="button" class="toast-close" id="btn-toast-close" aria-label="Tutup notifikasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Modal -->
+  <dialog id="shortcuts-dialog" class="modal" aria-labelledby="shortcuts-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="shortcuts-title">Pintasan Keyboard</h2>
+        <button type="button" class="icon-btn" id="btn-close-shortcuts" aria-label="Tutup dialog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <ul class="shortcut-list">
+        <li>
+          <span>Fokus ke input tugas baru</span>
+          <kbd>N</kbd>
+        </li>
+        <li>
+          <span>Fokus ke kolom pencarian</span>
+          <kbd>/</kbd>
+        </li>
+        <li>
+          <span>Simpan saat mengedit inline</span>
+          <kbd>Enter</kbd>
+        </li>
+        <li>
+          <span>Batal edit / tutup menu</span>
+          <kbd>Esc</kbd>
+        </li>
+        <li>
+          <span>Buka daftar pintasan ini</span>
+          <kbd>?</kbd>
+        </li>
+      </ul>
+    </div>
+  </dialog>
+
+  <!-- Interactive Halftone Particle Footer (Adapted from PPL-MODUL3) -->
+  <footer id="hwf-footer" class="hwf-root">
+    <canvas id="hwf-canvas" aria-hidden="true"></canvas>
+    <span class="hwf-sr">todolist</span>
+
+    <div class="hwf-top">
+      <div class="hwf-brand">
+        <strong>TodoList · LKP 3A</strong>
+        <span>Yuli Indiyanti · 240511130 · TI24D</span>
+      </div>
+
+      <nav class="hwf-col" aria-label="Navigasi Footer">
+        <h3>Navigasi</h3>
+        <ul>
+          <li><a href="#ringkasan">Ringkasan</a></li>
+          <li><a href="#ruang-kerja">Tambah Tugas</a></li>
+          <li><a href="#list-todo">Daftar Tugas</a></li>
+        </ul>
+      </nav>
+
+      <div class="hwf-col">
+        <h3>Praktikum</h3>
+        <ul>
+          <li><span>Pertemuan 4 · JavaScript &amp; DOM</span></li>
+          <li><span>S1 Teknik Informatika UMC</span></li>
+        </ul>
+      </div>
+
+      <div class="hwf-col">
+        <h3>Penyimpanan</h3>
+        <ul>
+          <li><span>localStorage Key: todos</span></li>
+          <li><span>Tema: Cocoa &amp; Butter Yellow</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="hwf-rule">
+      <span class="hwf-hint">Arahkan kursor atau klik area partikel di bawah</span>
+      <button type="button" class="hwf-up" id="btn-back-to-top">Back to top ↑</button>
+    </div>
+  </footer>
+</body>
+</html>
